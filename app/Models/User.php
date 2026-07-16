@@ -49,7 +49,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Book::class);
     }
-
+    /**
+    * ユーザーが投稿したレビュー
+    */
     public function reviews(): HasMany
     {
         return $this->hasMany(Review::class);
@@ -58,15 +60,14 @@ class User extends Authenticatable
     * お気に入りした書籍
     */
     public function favoriteBooks(): BelongsToMany
-    { {
-            return $this->belongsToMany(Book::class, 'favorites')->withTimestamps();
-        }
+    {
+        return $this->belongsToMany(Book::class, 'favorites')->withTimestamps();
     }
     /**
     * ユーザーがいいねしたレビュー
     */
     public function likedReviews(): BelongsToMany
     {
-        return $this->belongsToMany(Review::class, 'review_likes')->withTimestamps();
+        return $this->belongsToMany(Review::class,'review_likes')->withTimestamps();
     }
 }
