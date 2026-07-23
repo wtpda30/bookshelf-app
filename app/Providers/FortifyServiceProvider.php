@@ -13,9 +13,11 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Laravel\Fortify\Actions\RedirectIfTwoFactorAuthenticatable;
 use Laravel\Fortify\Fortify;
+use Laravel\Fortify\Contracts\LogoutResponse;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -24,7 +26,17 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(
+            LogoutResponse::class,
+            function () {
+                return new class implements LogoutResponse {
+                    public function toResponse($request)
+                    {
+                        return redirect()->route('login');
+                    }
+                };
+            }
+        );
     }
 
     /**

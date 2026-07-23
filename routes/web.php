@@ -6,12 +6,14 @@ use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ReviewLikeController;
 use App\Http\Controllers\GenreController;
+use App\Http\Controllers\RankingController;
 
 /**
      * ゲストも閲覧できる書籍ページ
      */
 Route::get('/', [BookController::class, 'index']);
 Route::get('/books', [BookController::class, 'index'])->name('books.index');
+Route::get('/ranking', [RankingController::class, 'index'])->name('ranking.index');
 
 /**
      * ログインが必要なページ
