@@ -70,9 +70,12 @@ class BookController extends Controller
             // 1ページ20件
             ->paginate($perPage);
 
-        return response()->json([
-            'message' => '取得成功',
-            'data' => BookResource::collection($books),], 200);
+            return BookResource::collection($books)
+    ->additional([
+        'message' => '取得成功',
+    ])
+    ->response()
+    ->setStatusCode(200);
     }
 
     /**
