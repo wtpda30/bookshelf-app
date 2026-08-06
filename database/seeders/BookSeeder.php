@@ -15,7 +15,7 @@ class BookSeeder extends Seeder
      */
     public function run(): void
     {
-        $user = User::first();
+        $users = User::all();
 
         $books = [
             ['title' => '吾輩は猫である', 'author' => '夏目漱石', 'isbn' => '9784101010014', 'published_date' => '1905-01-01', 'genres' => ['小説']],
@@ -32,10 +32,10 @@ class BookSeeder extends Seeder
         ];
 
         foreach ($books as $index => $bookData) {
-            $book = Book::firstOrCreate(
-                ['isbn' => $bookData['isbn']],
+            $book = Book::updateOrCreate(
+                ['isbn' => $bookData['isbn'],],
                 [
-                    'user_id' => $user->id,
+                    'user_id' => $users->random()->id,
                     'title' => $bookData['title'],
                     'author' => $bookData['author'],
                     'published_date' => $bookData['published_date'],
