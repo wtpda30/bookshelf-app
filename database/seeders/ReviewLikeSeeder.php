@@ -27,7 +27,7 @@ class ReviewLikeSeeder extends Seeder
                 ? []
                 : $users->random($count)->pluck('id')->toArray();
 
-            $review->likedUsers()->syncWithoutDetaching($likeUserIds);
+            $review->likedByUsers()->syncWithoutDetaching($likeUserIds);
         }
     }
 }
