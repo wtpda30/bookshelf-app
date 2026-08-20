@@ -13,19 +13,15 @@ return new class extends Migration
     {
         Schema::create('reading_plans', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')
-                ->constrained()
-                ->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained()->cascadeOnDelete();
 
-            $table->foreignId('book_id')
-                ->constrained()
-                ->cascadeOnDelete();
+            $table->foreignId('book_id')->constrained()->cascadeOnDelete();
 
-            $table->date('due_date');
+            $table->date('target_date');
 
-            $table->string('status', 20);
+            $table->string('status', 20)->default('in_progress');
+            $table->timestamp('completed_at')->nullable();
             $table->timestamps();
-            $table->unique(['user_id', 'book_id']);
         });
     }
 

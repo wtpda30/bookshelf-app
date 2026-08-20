@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\RedirectResponse;
 use App\Models\Review;
-
+use Illuminate\Http\RedirectResponse;
 
 class ReviewLikeController extends Controller
 {

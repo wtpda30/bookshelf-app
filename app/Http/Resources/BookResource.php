@@ -25,12 +25,12 @@ class BookResource extends JsonResource
             'description' => $this->description,
             'image_url' => $this->image_url,
 
-            'genres' => $this->whenLoaded('genres', fn ()=>$this->genres->map(function ($genre) {
-                    return [
-                        'id' => $genre->id,
-                        'name' => $genre->name,
-                    ];
-                })
+            'genres' => $this->whenLoaded('genres', fn () => $this->genres->map(function ($genre) {
+                return [
+                    'id' => $genre->id,
+                    'name' => $genre->name,
+                ];
+            })
             ),
 
             // 小数点第1位

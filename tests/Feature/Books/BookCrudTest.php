@@ -9,7 +9,6 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-
 class BookCrudTest extends TestCase
 {
     use RefreshDatabase;
@@ -98,7 +97,7 @@ class BookCrudTest extends TestCase
             'title' => 'テスト書籍',
             'author' => 'テスト著者',
             'isbn' => '9781234567890',
-            'published_date' => '2026-08-03',
+            'published_date' => '2026-08-03 00:00:00',
             'description' => 'テスト用の書籍説明です。',
             'image_url' => 'https://example.com/book.jpg',
         ]);
@@ -226,7 +225,7 @@ class BookCrudTest extends TestCase
             'title' => '更新後タイトル',
             'author' => '更新後著者',
             'isbn' => '9780987654321',
-            'published_date' => '2026-07-01',
+            'published_date' => '2026-07-01 00:00:00',
             'description' => '更新後の説明です。',
             'image_url' => 'https://example.com/updated.jpg',
         ]);
@@ -374,11 +373,8 @@ class BookCrudTest extends TestCase
     }
 
     /**
-
      * 他のユーザーは書籍編集画面を表示できないこと
-
      */
-
     public function test_other_user_cannot_display_edit_page(): void
     {
 
@@ -398,11 +394,8 @@ class BookCrudTest extends TestCase
     }
 
     /**
-
      * 他のユーザーは書籍を更新できないこと
-
      */
-
     public function test_other_user_cannot_update_book(): void
     {
 
@@ -459,11 +452,8 @@ class BookCrudTest extends TestCase
     }
 
     /**
-
      * 他のユーザーは書籍を削除できないこと
-
      */
-
     public function test_other_user_cannot_delete_book(): void
     {
 
@@ -493,5 +483,4 @@ class BookCrudTest extends TestCase
 
         ]);
     }
-
 }

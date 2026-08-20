@@ -23,5 +23,4 @@ class BookPolicy
         return $user->id === $book->user_id;
 
     }
-
 }

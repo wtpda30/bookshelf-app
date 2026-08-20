@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Api;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreBookRequest extends FormRequest
@@ -17,16 +18,11 @@ class StoreBookRequest extends FormRequest
     /**
      * 書籍登録時のバリデーション
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         return [
-            'user_id' => [
-                'required',
-                'integer',
-                'exists:users,id',
-            ],
 
             'title' => [
                 'required',
@@ -82,9 +78,6 @@ class StoreBookRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'user_id.required' => '登録者IDを入力してください。',
-            'user_id.integer' => '登録者IDは整数で入力してください。',
-            'user_id.exists' => '指定された登録者は存在しません。',
 
             'title.required' => 'タイトルを入力してください。',
             'title.string' => 'タイトルは文字列で入力してください。',
@@ -95,7 +88,7 @@ class StoreBookRequest extends FormRequest
             'author.max' => '著者名は255文字以内で入力してください。',
 
             'isbn.required' => 'ISBNを入力してください。',
-            'isbn.string'=>'ISBNは文字列で入力してください。',
+            'isbn.string' => 'ISBNは文字列で入力してください。',
             'isbn.digits' => 'ISBNは13桁で入力してください。',
             'isbn.unique' => 'ISBNは既に登録されています。',
 
@@ -122,7 +115,6 @@ class StoreBookRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'user_id' => '登録者ID',
             'title' => 'タイトル',
             'author' => '著者名',
             'isbn' => 'ISBN',

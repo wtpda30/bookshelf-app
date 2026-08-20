@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Api;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class IndexBookRequest extends FormRequest
@@ -17,7 +18,7 @@ class IndexBookRequest extends FormRequest
     /**
      *書籍一覧の検索条件を検証
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {

@@ -347,13 +347,9 @@ class ReviewCrudTest extends TestCase
     }
 
     /**
-
      * 他のユーザーはレビューを更新できないこと
-
      */
-
     public function test_other_user_cannot_update_review(): void
-
     {
 
         $owner = User::factory()->create();
@@ -401,13 +397,9 @@ class ReviewCrudTest extends TestCase
     }
 
     /**
-
      * 他のユーザーはレビューを削除できないこと
-
      */
-
     public function test_other_user_cannot_delete_review(): void
-
     {
 
         $owner = User::factory()->create();
