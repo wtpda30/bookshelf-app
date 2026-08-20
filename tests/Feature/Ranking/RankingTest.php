@@ -166,7 +166,7 @@ class RankingTest extends TestCase
             $bookWithoutReviews
         ) {
             return $rankedBooks->contains('id', $reviewedBook->id)
-                && !$rankedBooks->contains('id', $bookWithoutReviews->id);
+                && ! $rankedBooks->contains('id', $bookWithoutReviews->id);
         });
     }
 

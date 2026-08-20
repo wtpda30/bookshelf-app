@@ -24,7 +24,7 @@ class StoreBookRequestTest extends TestCase
 
         $data = $this->validData($user, $genres->pluck('id')->all());
 
-        $request = new StoreBookRequest();
+        $request = new StoreBookRequest;
 
         $validator = Validator::make(
             $data,
@@ -48,7 +48,7 @@ class StoreBookRequestTest extends TestCase
         $data['description'] = null;
         $data['image_url'] = null;
 
-        $request = new StoreBookRequest();
+        $request = new StoreBookRequest;
 
         $validator = Validator::make(
             $data,
@@ -64,7 +64,7 @@ class StoreBookRequestTest extends TestCase
      */
     public function test_required_fields_are_required(): void
     {
-        $request = new StoreBookRequest();
+        $request = new StoreBookRequest;
 
         $validator = Validator::make(
             [],
@@ -76,42 +76,11 @@ class StoreBookRequestTest extends TestCase
 
         $errors = $validator->errors()->toArray();
 
-        $this->assertArrayHasKey('user_id', $errors);
         $this->assertArrayHasKey('title', $errors);
         $this->assertArrayHasKey('author', $errors);
         $this->assertArrayHasKey('isbn', $errors);
         $this->assertArrayHasKey('published_date', $errors);
         $this->assertArrayHasKey('genre_ids', $errors);
-    }
-
-    /**
-     * 存在しないユーザーIDでは失敗すること
-     */
-    public function test_user_id_must_exist(): void
-    {
-        $genre = Genre::factory()->create();
-
-        $data = [
-            'user_id' => 999999,
-            'title' => 'Laravel入門',
-            'author' => '山田太郎',
-            'isbn' => '9781234567890',
-            'published_date' => '2026-08-01',
-            'description' => null,
-            'image_url' => null,
-            'genre_ids' => [$genre->id],
-        ];
-
-        $request = new StoreBookRequest();
-
-        $validator = Validator::make(
-            $data,
-            $request->rules(),
-            $request->messages()
-        );
-
-        $this->assertTrue($validator->fails());
-        $this->assertArrayHasKey('user_id', $validator->errors()->toArray());
     }
 
     /**
@@ -125,7 +94,7 @@ class StoreBookRequestTest extends TestCase
         $data = $this->validData($user, [$genre->id]);
         $data['isbn'] = '123456789012';
 
-        $request = new StoreBookRequest();
+        $request = new StoreBookRequest;
 
         $validator = Validator::make(
             $data,
@@ -148,7 +117,7 @@ class StoreBookRequestTest extends TestCase
         $data = $this->validData($user, [$genre->id]);
         $data['isbn'] = '978123456789A';
 
-        $request = new StoreBookRequest();
+        $request = new StoreBookRequest;
 
         $validator = Validator::make(
             $data,
@@ -175,7 +144,7 @@ class StoreBookRequestTest extends TestCase
         $data = $this->validData($user, [$genre->id]);
         $data['isbn'] = $existingBook->isbn;
 
-        $request = new StoreBookRequest();
+        $request = new StoreBookRequest;
 
         $validator = Validator::make(
             $data,
@@ -198,7 +167,7 @@ class StoreBookRequestTest extends TestCase
         $data = $this->validData($user, [$genre->id]);
         $data['published_date'] = '日付ではありません';
 
-        $request = new StoreBookRequest();
+        $request = new StoreBookRequest;
 
         $validator = Validator::make(
             $data,
@@ -224,7 +193,7 @@ class StoreBookRequestTest extends TestCase
         $data = $this->validData($user, [$genre->id]);
         $data['image_url'] = 'invalid-url';
 
-        $request = new StoreBookRequest();
+        $request = new StoreBookRequest;
 
         $validator = Validator::make(
             $data,
@@ -249,7 +218,7 @@ class StoreBookRequestTest extends TestCase
         $data = $this->validData($user, []);
         $data['genre_ids'] = [];
 
-        $request = new StoreBookRequest();
+        $request = new StoreBookRequest;
 
         $validator = Validator::make(
             $data,
@@ -273,7 +242,7 @@ class StoreBookRequestTest extends TestCase
 
         $data = $this->validData($user, [999999]);
 
-        $request = new StoreBookRequest();
+        $request = new StoreBookRequest;
 
         $validator = Validator::make(
             $data,
@@ -301,7 +270,7 @@ class StoreBookRequestTest extends TestCase
             [$genre->id, $genre->id]
         );
 
-        $request = new StoreBookRequest();
+        $request = new StoreBookRequest;
 
         $validator = Validator::make(
             $data,

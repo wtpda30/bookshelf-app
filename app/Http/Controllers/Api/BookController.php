@@ -9,13 +9,11 @@ use App\Http\Requests\Api\UpdateBookRequest;
 use App\Http\Resources\BookResource;
 use App\Models\Book;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
 
 class BookController extends Controller
 {
     /**
-     *
      * 書籍一覧を取得
      */
     public function index(IndexBookRequest $request): JsonResponse
@@ -70,16 +68,15 @@ class BookController extends Controller
             // 1ページ20件
             ->paginate($perPage);
 
-            return BookResource::collection($books)
-    ->additional([
-        'message' => '取得成功',
-    ])
-    ->response()
-    ->setStatusCode(200);
+        return BookResource::collection($books)
+            ->additional([
+                'message' => '取得成功',
+            ])
+            ->response()
+            ->setStatusCode(200);
     }
 
     /**
-     *
      * 書籍詳細を取得
      */
     public function show(Book $book): JsonResponse
@@ -95,16 +92,17 @@ class BookController extends Controller
 
         return response()->json([
             'message' => '取得成功',
-            'data' => new BookResource($book),], 200);
+            'data' => new BookResource($book), ], 200);
     }
 
     /**
-     *
      * 書籍を登録
      */
     public function store(StoreBookRequest $request): JsonResponse
     {
         $validated = $request->validated();
+
+        $validated['user_id'] = $request->user()->id;
 
         $book = DB::transaction(function () use ($validated) {
             $genreIds = $validated['genre_ids'];
@@ -124,15 +122,16 @@ class BookController extends Controller
 
         return response()->json([
             'message' => '登録成功',
-            'data' => new BookResource($book),], 201);
+            'data' => new BookResource($book),
+        ], 201);
     }
 
     /**
-     *
      * 書籍を更新
      */
-    public function update(UpdateBookRequest $request,Book $book): JsonResponse
+    public function update(UpdateBookRequest $request, Book $book): JsonResponse
     {
+        $this->authorize('update', $book);
         $validated = $request->validated();
 
         DB::transaction(function () use ($validated, $book) {
@@ -143,8 +142,7 @@ class BookController extends Controller
             $book->update($validated);
 
             /*
-             * 現在のジャンルを、
-             * 送られてきたジャンルIDに置き換える
+             * 現在のジャンルを、送られてきたジャンルIDに置き換える
              */
             $book->genres()->sync($genreIds);
         });
@@ -157,15 +155,15 @@ class BookController extends Controller
 
         return response()->json([
             'message' => '更新成功',
-            'data' => new BookResource($book),], 200);
+            'data' => new BookResource($book), ], 200);
     }
 
     /**
-     *
      * 書籍を削除
      */
     public function destroy(Book $book): JsonResponse
     {
+        $this->authorize('delete', $book);
         $book->delete();
 
         return response()->json(null, 204);

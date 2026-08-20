@@ -26,7 +26,7 @@ class IndexBookRequestTest extends TestCase
             'per_page' => 20,
         ];
 
-        $request = new IndexBookRequest();
+        $request = new IndexBookRequest;
 
         $validator = Validator::make(
             $data,
@@ -42,7 +42,7 @@ class IndexBookRequestTest extends TestCase
      */
     public function test_empty_parameters_pass_validation(): void
     {
-        $request = new IndexBookRequest();
+        $request = new IndexBookRequest;
 
         $validator = Validator::make(
             [],
@@ -58,7 +58,7 @@ class IndexBookRequestTest extends TestCase
      */
     public function test_keyword_must_be_string(): void
     {
-        $request = new IndexBookRequest();
+        $request = new IndexBookRequest;
 
         $validator = Validator::make(
             ['keyword' => ['Laravel']],
@@ -75,7 +75,7 @@ class IndexBookRequestTest extends TestCase
      */
     public function test_keyword_must_not_exceed_255_characters(): void
     {
-        $request = new IndexBookRequest();
+        $request = new IndexBookRequest;
 
         $validator = Validator::make(
             ['keyword' => str_repeat('あ', 256)],
@@ -92,7 +92,7 @@ class IndexBookRequestTest extends TestCase
      */
     public function test_genre_id_must_exist(): void
     {
-        $request = new IndexBookRequest();
+        $request = new IndexBookRequest;
 
         $validator = Validator::make(
             ['genre_id' => 999999],
@@ -109,7 +109,7 @@ class IndexBookRequestTest extends TestCase
      */
     public function test_page_must_be_at_least_one(): void
     {
-        $request = new IndexBookRequest();
+        $request = new IndexBookRequest;
 
         $validator = Validator::make(
             ['page' => 0],
@@ -126,7 +126,7 @@ class IndexBookRequestTest extends TestCase
      */
     public function test_per_page_must_be_at_least_one(): void
     {
-        $request = new IndexBookRequest();
+        $request = new IndexBookRequest;
 
         $validator = Validator::make(
             ['per_page' => 0],
@@ -143,7 +143,7 @@ class IndexBookRequestTest extends TestCase
      */
     public function test_per_page_must_not_exceed_100(): void
     {
-        $request = new IndexBookRequest();
+        $request = new IndexBookRequest;
 
         $validator = Validator::make(
             ['per_page' => 101],

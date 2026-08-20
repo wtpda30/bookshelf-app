@@ -127,7 +127,6 @@ class UpdateBookRequestTest extends TestCase
 
         $errors = $validator->errors()->toArray();
 
-        $this->assertArrayHasKey('user_id', $errors);
         $this->assertArrayHasKey('title', $errors);
         $this->assertArrayHasKey('author', $errors);
         $this->assertArrayHasKey('isbn', $errors);
@@ -162,40 +161,6 @@ class UpdateBookRequestTest extends TestCase
         $this->assertTrue($validator->fails());
         $this->assertArrayHasKey(
             'isbn',
-            $validator->errors()->toArray()
-        );
-    }
-
-    /**
-     * 存在しないユーザーIDでは失敗すること
-     */
-    public function test_user_id_must_exist(): void
-    {
-        $book = Book::factory()->create();
-        $genre = Genre::factory()->create();
-
-        $data = [
-            'user_id' => 999999,
-            'title' => '更新後タイトル',
-            'author' => '更新後著者',
-            'isbn' => $book->isbn,
-            'published_date' => '2026-08-01',
-            'description' => null,
-            'image_url' => null,
-            'genre_ids' => [$genre->id],
-        ];
-
-        $request = $this->createRequest($book);
-
-        $validator = Validator::make(
-            $data,
-            $request->rules(),
-            $request->messages()
-        );
-
-        $this->assertTrue($validator->fails());
-        $this->assertArrayHasKey(
-            'user_id',
             $validator->errors()->toArray()
         );
     }

@@ -67,7 +67,7 @@ class FavoriteTest extends TestCase
             $otherFavoriteBook
         ) {
             return $books->contains('id', $favoriteBook->id)
-                && !$books->contains('id', $otherFavoriteBook->id);
+                && ! $books->contains('id', $otherFavoriteBook->id);
         });
     }
 

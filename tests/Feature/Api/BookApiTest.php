@@ -7,6 +7,7 @@ use App\Models\Genre;
 use App\Models\Review;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class BookApiTest extends TestCase
@@ -50,24 +51,24 @@ class BookApiTest extends TestCase
         $response->assertJsonStructure([
             'message',
 
-                'data' => [
-                    '*' => [
-                        'id',
-                        'title',
-                        'author',
-                        'isbn',
-                        'published_date',
-                        'description',
-                        'image_url',
-                        'genres',
-                        'average_rating',
-                        'reviews_count',
-                        'created_at',
-                        'updated_at',
-                    ],
+            'data' => [
+                '*' => [
+                    'id',
+                    'title',
+                    'author',
+                    'isbn',
+                    'published_date',
+                    'description',
+                    'image_url',
+                    'genres',
+                    'average_rating',
+                    'reviews_count',
+                    'created_at',
+                    'updated_at',
                 ],
-                'links',
-                'meta',
+            ],
+            'links',
+            'meta',
         ]);
 
         $this->assertSame(
@@ -273,48 +274,47 @@ class BookApiTest extends TestCase
             ->assertJsonPath('meta.total', 7);
     }
 
+    /**
+     * pageが0以下の場合は422が返ること
+     */
+    public function test_page_must_be_at_least_one(): void
+    {
+        $response = $this->getJson(
+            '/api/v1/books?page=0'
+        );
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('page');
+    }
 
     /**
- * pageが0以下の場合は422が返ること
- */
-public function test_page_must_be_at_least_one(): void
-{
-    $response = $this->getJson(
-        '/api/v1/books?page=0'
-    );
+     * per_pageが0以下の場合は422が返ること
+     */
+    public function test_per_page_must_be_at_least_one(): void
+    {
+        $response = $this->getJson(
+            '/api/v1/books?per_page=0'
+        );
 
-    $response
-        ->assertUnprocessable()
-        ->assertJsonValidationErrors('page');
-}
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('per_page');
+    }
 
-/**
- * per_pageが0以下の場合は422が返ること
- */
-public function test_per_page_must_be_at_least_one(): void
-{
-    $response = $this->getJson(
-        '/api/v1/books?per_page=0'
-    );
+    /**
+     * per_pageが101以上の場合は422が返ること
+     */
+    public function test_per_page_must_not_exceed_one_hundred(): void
+    {
+        $response = $this->getJson(
+            '/api/v1/books?per_page=101'
+        );
 
-    $response
-        ->assertUnprocessable()
-        ->assertJsonValidationErrors('per_page');
-}
-
-/**
- * per_pageが101以上の場合は422が返ること
- */
-public function test_per_page_must_not_exceed_one_hundred(): void
-{
-    $response = $this->getJson(
-        '/api/v1/books?per_page=101'
-    );
-
-    $response
-        ->assertUnprocessable()
-        ->assertJsonValidationErrors('per_page');
-}
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('per_page');
+    }
 
     /**
      * 存在しないジャンルIDで422が返ること
@@ -399,387 +399,267 @@ public function test_per_page_must_not_exceed_one_hundred(): void
     }
 
     /**
-
      * 正常なデータで書籍を登録できること
-
      */
-
     public function test_book_can_be_created(): void
-
     {
 
         $user = User::factory()->create();
+        Sanctum::actingAs($user);
 
         $genres = Genre::factory()->count(2)->create();
 
         $data = $this->validBookData(
-
             $user,
-
             $genres->pluck('id')->all()
-
         );
 
-        $response = $this->postJson(
-
-            '/api/v1/books',
-
-            $data
-
-        );
+        $response = $this->postJson('/api/v1/books', $data);
 
         $response
-
             ->assertCreated()
-
             ->assertJsonPath('message', '登録成功')
-
             ->assertJsonPath('data.title', 'テスト書籍')
-
             ->assertJsonPath('data.author', 'テスト著者')
-
             ->assertJsonPath('data.isbn', '9781234567890')
-
             ->assertJsonCount(2, 'data.genres');
 
         $this->assertDatabaseHas('books', [
-
             'user_id' => $user->id,
-
             'title' => 'テスト書籍',
-
             'author' => 'テスト著者',
-
             'isbn' => '9781234567890',
-
         ]);
 
         foreach ($genres as $genre) {
 
             $this->assertDatabaseHas('book_genres', [
-
                 'book_id' => $response->json('data.id'),
-
                 'genre_id' => $genre->id,
-
             ]);
-
         }
-
     }
 
     /**
-
      * 書籍登録時の不正な値で422が返ること
-
      */
-
     public function test_book_creation_validation_error_returns_422(): void
-
     {
-
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
         $response = $this->postJson(
-
             '/api/v1/books',
-
             []
-
         );
 
         $response
-
             ->assertUnprocessable()
-
             ->assertJsonValidationErrors([
-
-                'user_id',
-
                 'title',
-
                 'author',
-
                 'isbn',
-
                 'published_date',
-
                 'genre_ids',
-
             ]);
 
         $this->assertDatabaseCount('books', 0);
-
     }
 
     /**
- * ISBNが13桁でない場合は422が返ること
- */
-public function test_isbn_must_be_thirteen_digits_when_creating_book(): void
-{
-    $user = User::factory()->create();
-    $genre = Genre::factory()->create();
+     * ISBNが13桁でない場合は422が返ること
+     */
+    public function test_isbn_must_be_thirteen_digits_when_creating_book(): void
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+        $genre = Genre::factory()->create();
 
-    $data = $this->validBookData(
-        $user,
-        [$genre->id],
-        [
-            'isbn' => '123456789012',
-        ]
-    );
+        $data = $this->validBookData(
+            $user,
+            [$genre->id],
+            [
+                'isbn' => '123456789012',
+            ]
+        );
 
-    $response = $this->postJson(
-        '/api/v1/books',
-        $data
-    );
+        $response = $this->postJson(
+            '/api/v1/books',
+            $data
+        );
 
-    $response
-        ->assertUnprocessable()
-        ->assertJsonValidationErrors('isbn');
-}
-
-/**
- * ISBNが数字以外を含む場合は422が返ること
- */
-public function test_isbn_must_contain_only_digits_when_creating_book(): void
-{
-    $user = User::factory()->create();
-    $genre = Genre::factory()->create();
-
-    $data = $this->validBookData(
-        $user,
-        [$genre->id],
-        [
-            'isbn' => '978123456789A',
-        ]
-    );
-
-    $response = $this->postJson(
-        '/api/v1/books',
-        $data
-    );
-
-    $response
-        ->assertUnprocessable()
-        ->assertJsonValidationErrors('isbn');
-}
-
-/**
- * 出版日が日付形式でない場合は422が返ること
- */
-public function test_published_date_must_be_valid_date_when_creating_book(): void
-{
-    $user = User::factory()->create();
-    $genre = Genre::factory()->create();
-
-    $data = $this->validBookData(
-        $user,
-        [$genre->id],
-        [
-            'published_date' => '日付ではありません',
-        ]
-    );
-
-    $response = $this->postJson(
-        '/api/v1/books',
-        $data
-    );
-
-    $response
-        ->assertUnprocessable()
-        ->assertJsonValidationErrors('published_date');
-}
-
-/**
- * 画像URLがURL形式でない場合は422が返ること
- */
-public function test_image_url_must_be_valid_url_when_creating_book(): void
-{
-    $user = User::factory()->create();
-    $genre = Genre::factory()->create();
-
-    $data = $this->validBookData(
-        $user,
-        [$genre->id],
-        [
-            'image_url' => 'URLではありません',
-        ]
-    );
-
-    $response = $this->postJson(
-        '/api/v1/books',
-        $data
-    );
-
-    $response
-        ->assertUnprocessable()
-        ->assertJsonValidationErrors('image_url');
-}
-
-/**
- * 画像URLが255文字を超える場合は422が返ること
- */
-public function test_image_url_must_not_exceed_255_characters_when_creating_book(): void
-{
-    $user = User::factory()->create();
-    $genre = Genre::factory()->create();
-
-    $data = $this->validBookData(
-        $user,
-        [$genre->id],
-        [
-            'image_url' => 'https://example.com/' . str_repeat('a', 240),
-        ]
-    );
-
-    $response = $this->postJson(
-        '/api/v1/books',
-        $data
-    );
-
-    $response
-        ->assertUnprocessable()
-        ->assertJsonValidationErrors('image_url');
-}
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('isbn');
+    }
 
     /**
-
-     * 重複したISBNでは登録できないこと
-
+     * ISBNが数字以外を含む場合は422が返ること
      */
+    public function test_isbn_must_contain_only_digits_when_creating_book(): void
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+        $genre = Genre::factory()->create();
 
+        $data = $this->validBookData(
+            $user,
+            [$genre->id],
+            [
+                'isbn' => '978123456789A',
+            ]
+        );
+
+        $response = $this->postJson(
+            '/api/v1/books',
+            $data
+        );
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('isbn');
+    }
+
+    /**
+     * 出版日が日付形式でない場合は422が返ること
+     */
+    public function test_published_date_must_be_valid_date_when_creating_book(): void
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+        $genre = Genre::factory()->create();
+
+        $data = $this->validBookData(
+            $user,
+            [$genre->id],
+            [
+                'published_date' => '日付ではありません',
+            ]
+        );
+
+        $response = $this->postJson(
+            '/api/v1/books',
+            $data
+        );
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('published_date');
+    }
+
+    /**
+     * 画像URLがURL形式でない場合は422が返ること
+     */
+    public function test_image_url_must_be_valid_url_when_creating_book(): void
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+        $genre = Genre::factory()->create();
+
+        $data = $this->validBookData(
+            $user,
+            [$genre->id],
+            [
+                'image_url' => 'URLではありません',
+            ]
+        );
+
+        $response = $this->postJson(
+            '/api/v1/books',
+            $data
+        );
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('image_url');
+    }
+
+    /**
+     * 画像URLが255文字を超える場合は422が返ること
+     */
+    public function test_image_url_must_not_exceed_255_characters_when_creating_book(): void
+    {
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+        $genre = Genre::factory()->create();
+
+        $data = $this->validBookData(
+            $user,
+            [$genre->id],
+            [
+                'image_url' => 'https://example.com/'.str_repeat('a', 240),
+            ]
+        );
+
+        $response = $this->postJson(
+            '/api/v1/books',
+            $data
+        );
+
+        $response
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('image_url');
+    }
+
+    /**
+     * 重複したISBNでは登録できないこと
+     */
     public function test_duplicate_isbn_cannot_be_created(): void
-
     {
 
         $user = User::factory()->create();
-
+        Sanctum::actingAs($user);
         $genre = Genre::factory()->create();
 
         Book::factory()->create([
-
             'isbn' => '9781234567890',
-
         ]);
 
         $data = $this->validBookData(
-
             $user,
-
             [$genre->id]
-
         );
 
         $response = $this->postJson(
-
             '/api/v1/books',
-
             $data
-
         );
 
         $response
-
             ->assertUnprocessable()
-
             ->assertJsonValidationErrors('isbn');
-
     }
 
     /**
-
-     * 存在しないユーザーIDでは登録できないこと
-
-     */
-
-    public function test_book_cannot_be_created_with_nonexistent_user(): void
-
-    {
-
-        $genre = Genre::factory()->create();
-
-        $data = [
-
-            'user_id' => 999999,
-
-            'title' => 'テスト書籍',
-
-            'author' => 'テスト著者',
-
-            'isbn' => '9781234567890',
-
-            'published_date' => '2026-01-01',
-
-            'description' => null,
-
-            'image_url' => null,
-
-            'genre_ids' => [$genre->id],
-
-        ];
-
-        $response = $this->postJson(
-
-            '/api/v1/books',
-
-            $data
-
-        );
-
-        $response
-
-            ->assertUnprocessable()
-
-            ->assertJsonValidationErrors('user_id');
-
-    }
-
-    /**
-
      * 存在しないジャンルIDでは登録できないこと
-
      */
-
     public function test_book_cannot_be_created_with_nonexistent_genre(): void
-
     {
 
         $user = User::factory()->create();
-
+        Sanctum::actingAs($user);
         $data = $this->validBookData(
-
             $user,
-
             [999999]
-
         );
 
         $response = $this->postJson(
-
             '/api/v1/books',
-
             $data
-
         );
 
         $response
-
             ->assertUnprocessable()
-
             ->assertJsonValidationErrors('genre_ids.0');
-
     }
 
     /**
-
      * 正常なデータで書籍とジャンルを更新できること
-
      */
-
     public function test_book_can_be_updated(): void
-
     {
 
         $user = User::factory()->create();
-
+        Sanctum::actingAs($user);
         $book = Book::factory()->create([
 
             'user_id' => $user->id,
@@ -795,101 +675,64 @@ public function test_image_url_must_not_exceed_255_characters_when_creating_book
         $book->genres()->attach($oldGenre->id);
 
         $data = $this->validBookData(
-
             $user,
-
             $newGenres->pluck('id')->all(),
-
             [
-
                 'title' => '更新後の書籍',
-
                 'author' => '更新後の著者',
-
                 'isbn' => '9782222222222',
-
             ]
-
         );
 
         $response = $this->putJson(
-
             "/api/v1/books/{$book->id}",
-
             $data
-
         );
 
         $response
-
             ->assertOk()
-
             ->assertJsonPath('message', '更新成功')
-
             ->assertJsonPath('data.id', $book->id)
-
             ->assertJsonPath('data.title', '更新後の書籍')
-
             ->assertJsonPath('data.author', '更新後の著者')
-
             ->assertJsonPath('data.isbn', '9782222222222')
-
             ->assertJsonCount(2, 'data.genres');
 
         $this->assertDatabaseHas('books', [
 
             'id' => $book->id,
-
             'title' => '更新後の書籍',
-
             'author' => '更新後の著者',
-
             'isbn' => '9782222222222',
-
         ]);
 
         $this->assertDatabaseMissing('book_genres', [
-
             'book_id' => $book->id,
-
             'genre_id' => $oldGenre->id,
-
         ]);
 
         foreach ($newGenres as $genre) {
 
             $this->assertDatabaseHas('book_genres', [
-
                 'book_id' => $book->id,
-
                 'genre_id' => $genre->id,
-
             ]);
-
         }
-
     }
 
     /**
-
      * 更新対象自身のISBNはそのまま使用できること
-
      */
-
     public function test_current_book_isbn_is_allowed_when_updating(): void
-
     {
 
         $user = User::factory()->create();
-
+        Sanctum::actingAs($user);
         $genre = Genre::factory()->create();
 
         $book = Book::factory()->create([
-
             'user_id' => $user->id,
-
             'isbn' => '9781234567890',
-
         ]);
 
         $book->genres()->attach($genre->id);
@@ -897,194 +740,133 @@ public function test_image_url_must_not_exceed_255_characters_when_creating_book
         $data = $this->validBookData(
 
             $user,
-
             [$genre->id],
-
             [
-
                 'title' => 'タイトルのみ変更',
-
                 'isbn' => $book->isbn,
-
             ]
-
         );
 
         $response = $this->putJson(
-
             "/api/v1/books/{$book->id}",
-
             $data
-
         );
 
         $response
-
             ->assertOk()
-
             ->assertJsonPath(
-
                 'data.isbn',
-
                 '9781234567890'
-
             );
 
         $this->assertDatabaseHas('books', [
-
             'id' => $book->id,
-
             'title' => 'タイトルのみ変更',
-
             'isbn' => '9781234567890',
-
         ]);
-
     }
 
     /**
-
      * 別の書籍が使用しているISBNでは更新できないこと
-
      */
-
     public function test_isbn_used_by_another_book_cannot_be_used_for_update(): void
-
     {
 
         $user = User::factory()->create();
-
+        Sanctum::actingAs($user);
         $genre = Genre::factory()->create();
 
         $book = Book::factory()->create([
-
             'user_id' => $user->id,
-
             'isbn' => '9781111111111',
 
         ]);
 
         $otherBook = Book::factory()->create([
-
             'isbn' => '9782222222222',
-
         ]);
 
         $data = $this->validBookData(
-
             $user,
-
             [$genre->id],
-
             [
-
                 'isbn' => $otherBook->isbn,
-
             ]
 
         );
 
         $response = $this->putJson(
-
             "/api/v1/books/{$book->id}",
-
             $data
-
         );
 
         $response
-
             ->assertUnprocessable()
-
             ->assertJsonValidationErrors('isbn');
-
         $this->assertDatabaseHas('books', [
-
             'id' => $book->id,
-
             'isbn' => '9781111111111',
-
         ]);
-
     }
 
     /**
-
      * 存在しない書籍の更新で404が返ること
-
      */
-
     public function test_updating_nonexistent_book_returns_404(): void
-
     {
 
         $user = User::factory()->create();
-
+        Sanctum::actingAs($user);
         $genre = Genre::factory()->create();
 
         $data = $this->validBookData(
-
             $user,
-
             [$genre->id]
-
         );
 
         $response = $this->putJson(
-
             '/api/v1/books/999999',
-
             $data
-
         );
 
         $response->assertNotFound();
-
     }
 
     /**
-
      * 書籍を削除できること
-
      */
-
     public function test_book_can_be_deleted(): void
-
     {
 
-        $book = Book::factory()->create();
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+        $book = Book::factory()->create([
+            'user_id' => $user->id,
+        ]);
 
         $response = $this->deleteJson(
-
             "/api/v1/books/{$book->id}"
-
         );
 
         $response
-
             ->assertNoContent()
-
             ->assertContent('');
 
         $this->assertDatabaseMissing('books', [
-
             'id' => $book->id,
-
         ]);
-
     }
 
     /**
-
      * 書籍削除時に関連データも削除されること
-
      */
-
     public function test_related_data_is_deleted_when_book_is_deleted(): void
-
     {
-
-        $book = Book::factory()->create();
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
+        $book = Book::factory()->create([
+            'user_id' => $user->id,
+        ]);
 
         $genre = Genre::factory()->create();
 
@@ -1095,65 +877,43 @@ public function test_image_url_must_not_exceed_255_characters_when_creating_book
         $book->favoriteUsers()->attach($favoriteUser->id);
 
         $review = Review::factory()->create([
-
             'book_id' => $book->id,
-
         ]);
 
         $this->deleteJson(
-
             "/api/v1/books/{$book->id}"
-
         )->assertNoContent();
 
         $this->assertDatabaseMissing('books', [
-
             'id' => $book->id,
-
         ]);
 
         $this->assertDatabaseMissing('reviews', [
-
             'id' => $review->id,
-
         ]);
 
         $this->assertDatabaseMissing('book_genres', [
-
             'book_id' => $book->id,
-
             'genre_id' => $genre->id,
-
         ]);
 
         $this->assertDatabaseMissing('favorites', [
-
             'book_id' => $book->id,
-
             'user_id' => $favoriteUser->id,
-
         ]);
-
     }
 
     /**
-
      * 存在しない書籍の削除で404が返ること
-
      */
-
     public function test_deleting_nonexistent_book_returns_404(): void
-
     {
-
+        $user = User::factory()->create();
+        Sanctum::actingAs($user);
         $response = $this->deleteJson(
-
             '/api/v1/books/999999'
-
         );
 
         $response->assertNotFound();
-
     }
-
 }

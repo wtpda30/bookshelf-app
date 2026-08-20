@@ -368,13 +368,9 @@ class GenreCrudTest extends TestCase
     }
 
     /**
-
      * 書籍と紐づいているジャンルは削除できないこと
-
      */
-
     public function test_genre_with_books_cannot_be_deleted(): void
-
     {
 
         $user = User::factory()->create();
@@ -426,5 +422,4 @@ class GenreCrudTest extends TestCase
         ]);
 
     }
-
 }

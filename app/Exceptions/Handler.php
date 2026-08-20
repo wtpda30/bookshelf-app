@@ -3,10 +3,9 @@
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
-use Illuminate\Auth\Access\AuthorizationException;
-use Throwable;
-use Illuminate\Validation\ValidationException;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class Handler extends ExceptionHandler
@@ -27,6 +26,15 @@ class Handler extends ExceptionHandler
      */
     public function register(): void
     {
+        // 403
+        $this->renderable(function (AccessDeniedHttpException $e, Request $request) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'error' => 'この操作を実行する権限がありません。',
+                ], 403);
+            }
+        });
+
         // 404
         $this->renderable(function (NotFoundHttpException $e, Request $request) {
             if ($request->expectsJson()) {
@@ -40,23 +48,8 @@ class Handler extends ExceptionHandler
             if ($request->expectsJson()) {
                 return response()->json([
                     'message' => '入力内容に誤りがあります。',
-                    'errors' => $e->errors(),], 422);
+                    'errors' => $e->errors(), ], 422);
             }
         });
-    }
-
-    public function render($request, Throwable $e)
-    {
-        if ($e instanceof AuthorizationException) {
-        if ($request->expectsJson()) {
-            return response()->json([
-                'error' => 'この操作を実行する権限がありません。',
-            ], 403);
-        }
-
-        return response('権限がありません', 403);
-    }
-
-    return parent::render($request, $e);
     }
 }

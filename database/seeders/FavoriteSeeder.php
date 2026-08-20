@@ -2,10 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\Book;
 use App\Models\User;
+use Illuminate\Database\Seeder;
 
 class FavoriteSeeder extends Seeder
 {
@@ -19,13 +18,13 @@ class FavoriteSeeder extends Seeder
 
         $favoriteCounts = [3, 4, 5, 3, 5];
 
-    foreach ($users as $index => $user) {
-        $favoriteBookIds = $books
-            ->random($favoriteCounts[$index])
-            ->pluck('id')
-            ->toArray();
+        foreach ($users as $index => $user) {
+            $favoriteBookIds = $books
+                ->random($favoriteCounts[$index])
+                ->pluck('id')
+                ->toArray();
 
-        $user->favoriteBooks()->syncWithoutDetaching($favoriteBookIds);
+            $user->favoriteBooks()->syncWithoutDetaching($favoriteBookIds);
         }
     }
 }

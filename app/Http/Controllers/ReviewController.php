@@ -14,7 +14,7 @@ class ReviewController extends Controller
     /**
      * レビューを投稿する
      */
-    public function store(StoreReviewRequest $request,Book $book): RedirectResponse
+    public function store(StoreReviewRequest $request, Book $book): RedirectResponse
     {
         $validated = $request->validated();
 
@@ -44,11 +44,11 @@ class ReviewController extends Controller
     /**
      * レビューを更新する
      */
-    public function update(UpdateReviewRequest $request,Review $review): RedirectResponse
+    public function update(UpdateReviewRequest $request, Review $review): RedirectResponse
     {
         $this->authorize('update', $review);
 
-        $review->update( $request-> validated());
+        $review->update($request->validated());
 
         return redirect()
             ->route('books.show', $review->book)

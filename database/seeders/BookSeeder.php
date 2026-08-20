@@ -2,11 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\Book;
 use App\Models\Genre;
 use App\Models\User;
+use Illuminate\Database\Seeder;
 
 class BookSeeder extends Seeder
 {
@@ -33,14 +32,14 @@ class BookSeeder extends Seeder
 
         foreach ($books as $index => $bookData) {
             $book = Book::updateOrCreate(
-                ['isbn' => $bookData['isbn'],],
+                ['isbn' => $bookData['isbn']],
                 [
                     'user_id' => $users->random()->id,
                     'title' => $bookData['title'],
                     'author' => $bookData['author'],
                     'published_date' => $bookData['published_date'],
-                    'description' => $bookData['title'] . 'の説明文です。',
-                    'image_url' => 'https://placehold.co/200x300/e2e8f0/475569?text=' . ($index + 1),
+                    'description' => $bookData['title'].'の説明文です。',
+                    'image_url' => 'https://placehold.co/200x300/e2e8f0/475569?text='.($index + 1),
                 ]
             );
 
