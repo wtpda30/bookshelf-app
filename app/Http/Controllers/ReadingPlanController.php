@@ -88,7 +88,7 @@ class ReadingPlanController extends Controller
 
         if (
             $readingPlan->status->value === ReadingPlan::STATUS_EXPIRED
-            && $request->target_date > now()->toDateString()
+            && $request->target_date >= now()->toDateString()
         ) {
             $data['status'] = ReadingPlan::STATUS_IN_PROGRESS;
         }
@@ -114,7 +114,7 @@ class ReadingPlanController extends Controller
 
         return redirect()
             ->route('reading-plans.index')
-            ->with('success', '書籍を読了しました');
+            ->with('success', '読書計画を完了しました');
     }
 
     /**
