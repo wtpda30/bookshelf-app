@@ -248,7 +248,7 @@ class ReadingPlanTest extends TestCase
             ->post(route('reading-plans.complete', $readingPlan));
 
         $response->assertRedirect(route('reading-plans.index'));
-        $response->assertSessionHas('success', '書籍を読了しました');
+        $response->assertSessionHas('success', '読書計画を完了しました');
 
         $this->assertDatabaseHas('reading_plans', [
             'id' => $readingPlan->id,
